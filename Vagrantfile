@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "ubuntu/vivid64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -23,7 +23,7 @@ Vagrant.configure(2) do |config|
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   # config.vm.network "forwarded_port", guest: 80, host: 8080
-  #config.vm.network "forwarded_port", guest: 58846, host: 58846
+  config.vm.network "forwarded_port", guest: 58846, host: 58846
   #config.vm.network "forwarded_port", guest: 8080, host: 8080
   #config.vm.network "forwarded_port", guest: 5000, host: 5000
 
@@ -34,55 +34,33 @@ Vagrant.configure(2) do |config|
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
   # your network.
-  # config.vm.network "public_network"
+  config.vm.network "public_network"
 
   # Share an additional folder to the guest VM. The first argument is
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   config.vm.synced_folder "../data", "/vagrant_data"
-
-  # Provider-specific configuration so you can fine-tune various
-  # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
-
-  # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
-  # such as FTP and Heroku are also available. See the documentation at
-  # https://docs.vagrantup.com/v2/push/atlas.html for more information.
-  # config.push.define "atlas" do |push|
-  #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
-  # end
+  config.vm.synced_folder "../streamer", "/streamer"
 
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
-   config.vm.provision "shell", privileged:false, inline: <<-SHELL
-     sudo apt-get update
-  #  sudo apt-get install -y apache2
-     sudo apt-get install -y deluged deluge-console openvpn
+   #config.vm.provision "shell", privileged:false, inline: <<-SHELL
 
-     sudo killall deluged
-     deluged
-     sleep 10
-     deluge-console "config -s allow_remote True"
-     deluge-console "config allow_remote"
-     sudo killall deluged
-     sudo cp /vagrant/data/*.egg  ~/.config/deluge/plugins/
-     sudo echo vagrant:vagrant:10 >> ~/.config/deluge/auth
-     sudo echo deluge:deluge:10 >> ~/.config/deluge/auth
-     cat ~/.config/deluge/auth
-     deluged
+   #SHELL
+   config.vm.provision "shell", privileged:false, path: "tbox_config.sh"
+   config.vm.provision "file", source: "core.conf", destination: ".config/deluge/core.conf"
+   config.vm.provision "file", source: "core.conf", destination: ".config/deluge/core.conf~"
+   config.vm.provision "file", source: "yarss2.conf", destination: ".config/deluge/yarss2.conf"
+   config.vm.provision "file", source: "execute.conf", destination: ".config/deluge/execute.conf"
+   config.vm.provision "file", source: "deluge-postprocess.sh", destination: ".config/deluge/deluge-postprocess.sh"
+   config.vm.provision "file", source: "checkMyTorrentIp.png.torrent", destination: "./torrents/checkMyTorrentIp.png.torrent"
+   config.vm.provision "shell", privileged:true, path: "tbox_vpn.sh"
+   config.vm.provision "shell", privileged:false, inline: <<-SHELL
+   deluged
+   sleep 5
+   deluge-web --fork
    SHELL
-   #config.vm.provision "shell", path: "tbox_config.sh"
+
 end
