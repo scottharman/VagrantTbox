@@ -13,7 +13,10 @@ Vagrant.configure(2) do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "ubuntu/vivid64"
-
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 1024
+    v.cpus = 2
+  end
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
@@ -34,7 +37,7 @@ Vagrant.configure(2) do |config|
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
   # your network.
-  config.vm.network "public_network"
+  # config.vm.network "public_network"
 
   # Share an additional folder to the guest VM. The first argument is
   # the path on the host to the actual folder. The second argument is
@@ -58,6 +61,7 @@ Vagrant.configure(2) do |config|
    config.vm.provision "file", source: "checkMyTorrentIp.png.torrent", destination: "./torrents/checkMyTorrentIp.png.torrent"
    config.vm.provision "shell", privileged:true, path: "tbox_vpn.sh"
    config.vm.provision "shell", privileged:false, inline: <<-SHELL
+   sudo chmod a+x ~/.config/deluge/deluge-postprocess.sh
    deluged
    sleep 5
    deluge-web --fork
