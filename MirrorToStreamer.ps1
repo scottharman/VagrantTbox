@@ -11,6 +11,7 @@ $fsw = new-object System.IO.FileSystemWatcher $SourcePath -Property @{
 }
 
 $onCreated = Register-ObjectEvent $fsw Created -SourceIdentifier FileCreated -Action {
+    Start-Sleep -s 600
     $SourcePath = "E:\Streamer\"
     $DestPath = "\\wdtvlivehub\wdtvlivehub\"
     #$DestPath = "E:\Videos\"
